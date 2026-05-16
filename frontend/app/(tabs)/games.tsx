@@ -25,7 +25,6 @@ export default function GamesTab() {
       bg: colors.secondary,
       icon: "bulb" as any,
       onPress: () => router.push("/games/quiz"),
-      live: true,
     },
     {
       key: "spin",
@@ -35,7 +34,15 @@ export default function GamesTab() {
       bg: colors.accent,
       img: ASSETS.spin,
       onPress: () => router.push("/games/spin"),
-      live: true,
+    },
+    {
+      key: "tap",
+      title: "Tap Challenge",
+      sub: "15-second tap sprint",
+      reward: "+1 XP / 5 taps",
+      bg: colors.primary,
+      img: ASSETS.tap,
+      onPress: () => router.push("/games/tap"),
     },
     {
       key: "daily",
@@ -45,17 +52,6 @@ export default function GamesTab() {
       bg: colors.warning,
       icon: "gift" as any,
       onPress: () => router.push("/games/daily"),
-      live: true,
-    },
-    {
-      key: "tap",
-      title: "Tap Challenge",
-      sub: "Smash the button — coming soon",
-      reward: "Coming soon",
-      bg: colors.primary,
-      img: ASSETS.tap,
-      onPress: () => {},
-      live: false,
     },
   ];
 
@@ -67,18 +63,35 @@ export default function GamesTab() {
           Pick a game and stack rewards
         </Text>
 
+        {/* Missions banner */}
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={() => router.push("/missions")}
+          testID="open-missions"
+        >
+          <BrutalCard background={colors.success} style={{ marginTop: SPACING.md }}>
+            <View style={styles.row}>
+              <Ionicons name="list-circle" size={56} color="#0A0A0A" />
+              <View style={{ flex: 1, marginLeft: 10 }}>
+                <BrutalBadge label="DAILY MISSIONS" color={colors.warning} />
+                <Text style={styles.cardTitle}>Bonus rewards await</Text>
+                <Text style={styles.cardSub}>Tap to view today&apos;s missions →</Text>
+              </View>
+            </View>
+          </BrutalCard>
+        </TouchableOpacity>
+
         {games.map((g) => (
           <TouchableOpacity
             key={g.key}
             activeOpacity={0.85}
             onPress={g.onPress}
-            disabled={!g.live}
             testID={`game-card-${g.key}`}
           >
             <BrutalCard background={g.bg} style={{ marginTop: SPACING.md }}>
               <View style={styles.row}>
                 <View style={{ flex: 1 }}>
-                  <BrutalBadge label={g.live ? "LIVE" : "SOON"} color={g.live ? colors.success : colors.surface} />
+                  <BrutalBadge label="LIVE" color={colors.warning} />
                   <Text style={styles.cardTitle}>{g.title}</Text>
                   <Text style={styles.cardSub}>{g.sub}</Text>
                   <View style={styles.rewardRow}>

@@ -148,20 +148,20 @@ export default function HomeTab() {
             onPress={() => router.push("/games/spin")}
           />
           <ActionCard
-            testID="action-leaderboard"
-            title="Ranks"
-            subtitle="Top players"
-            icon="trophy"
-            color={colors.warning}
-            onPress={() => router.push("/(tabs)/leaderboard")}
+            testID="action-tap"
+            title="Tap"
+            subtitle="Speed sprint"
+            icon="flash"
+            color={colors.primary}
+            onPress={() => router.push("/games/tap")}
           />
           <ActionCard
-            testID="action-profile"
-            title="Badges"
-            subtitle="Your stats"
-            icon="medal"
-            color={colors.primary}
-            onPress={() => router.push("/(tabs)/profile")}
+            testID="action-missions"
+            title="Missions"
+            subtitle="Bonus rewards"
+            icon="list"
+            color={colors.success}
+            onPress={() => router.push("/missions")}
           />
         </View>
 
