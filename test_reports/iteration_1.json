@@ -1,0 +1,48 @@
+{
+  "summary": "First testing pass for EarnPlay (RN/Expo + FastAPI + MongoDB). Backend: 21/21 pytest cases pass after fixing one tz bug in /api/games/spin. Frontend: All critical flows verified end-to-end (login, register, home, daily-claim x2, 5-question quiz, spin, leaderboard with weekly/monthly/all switching, profile + logout) after fixing one runtime red-screen on the Home tab caused by importing useFocusEffect from @react-navigation/native instead of expo-router.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/games/spin", "issue": "[FIXED by tester] Second spin within rate-limit window returned 500 instead of 429: TypeError comparing naive (MongoDB) vs aware (now_utc) datetimes. Patched by normalising last_spin to UTC-aware before subtraction."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "app/(tabs)/index.tsx", "issue": "[FIXED by tester] Red-screen crash on Home tab right after login: 'Couldn't find a navigation object. Is your component inside NavigationContainer?'. Root cause: useFocusEffect was imported from @react-navigation/native; Expo Router does not mount RN-Navigation's NavigationContainer. Switched import to useFocusEffect from expo-router.", "testID": "n/a", "priority": "CRITICAL"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "(tabs) bottom tab bar", "issues": ["Bottom tabs render as <a href> with only Ionicons and no labels & no testID/accessibilityLabel. Navigation works via href but tabs are not directly addressable by automated tests. Add testID='tab-home|tab-games|tab-leaderboard|tab-profile' on Tabs.Screen options/tabBarButton."]}
+    ],
+    "react_native_issues": [
+      {"component": "various", "issue": "Deprecation warnings in bundler logs: 'shadow*' style props (use boxShadow), Image style.resizeMode (use props.resizeMode), props.pointerEvents (use style.pointerEvents). Non-blocking but noisy."}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "[Done by tester] Fix tz-aware datetime bug in /api/games/spin (server.py).",
+    "[Done by tester] Fix useFocusEffect import on app/(tabs)/index.tsx to use expo-router.",
+    "Optional: Add testID props to the bottom Tabs (Home / Games / Leaderboard / Profile) so they can be targeted directly by Playwright/Detox, e.g. options={{ tabBarButtonTestID: 'tab-leaderboard' }} or wrap with a custom tabBarButton with testID.",
+    "Optional: PRD referenced testIDs differ slightly from implementation: 'daily-claim-button' actually 'daily-claim'; 'header-coin-pill' actually 'header-coin-balance'. Align naming with PRD or update PRD.",
+    "Optional: Suppress passlib bcrypt __about__ warning by pinning bcrypt<4 or upgrading passlib; cosmetic only."
+  ],
+  "critical_code_review_comments": [
+    "Spin rate-limit comparison did not defensively handle naive datetimes coming back from MongoDB; similar defensive pattern recommended anywhere persisted datetimes are compared to now_utc(). daily_claim is safe because it calls .date() only.",
+    "Leaderboard 'weekly' & 'monthly' periods currently return the same all-time XP sort — acceptable for MVP but flagged: window-based filtering not implemented.",
+    "JWT_SECRET falls back to a random per-process secret when env var missing; this invalidates tokens on every backend restart. Acceptable for preview; consider persisting JWT_SECRET in .env for prod."
+  ],
+  "updated_files": [
+    "/app/backend/server.py (spin tz fix)",
+    "/app/frontend/app/(tabs)/index.tsx (useFocusEffect import fix)",
+    "/app/backend/tests/backend_test.py (new)"
+  ],
+  "success_rate": {"backend": "100% (21/21)", "frontend": "100% of critical flows (login, register, home, daily x2, quiz x5, spin, leaderboard 3 periods, profile, logout)"},
+  "seed_data_creation": "Several TEST_<hex>@earnplay.app users were created via pytest fixtures and one TESTui_<hex>@earnplay.app via the UI register flow. They appear in the leaderboard. Safe to leave or remove later by email prefix TEST_/testui_.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend tests live at /app/backend/tests/backend_test.py and can be re-run with: pytest /app/backend/tests/backend_test.py -v. They self-register a unique test user so spin/daily/profile tests don't collide with the 3 demo accounts. Spin endpoint enforces a 1-minute server-side rate limit per user — back-to-back calls in the same test return 429. demo@earnplay.app / Demo1234! is the canonical demo. Frontend uses Expo Router file-based routing; bottom tabs are reachable in tests via anchor href ('a[href=\"/leaderboard\"]') because they lack testIDs.",
+  "rca_of_issue": "Issue 1 (FE red-screen): @react-navigation/native's useFocusEffect calls useNavigation() which requires being inside a NavigationContainer; Expo Router does not mount that container in user space — it ships its own equivalent (re-exported as useFocusEffect from expo-router). Fix: switch the import. Issue 2 (BE 500 on second spin): Motor/MongoDB persists datetimes as naive UTC; subtracting from a tz-aware datetime.now(timezone.utc) raises TypeError. Fix: normalise the stored value with .replace(tzinfo=timezone.utc) before comparison."
+}
