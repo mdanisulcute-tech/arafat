@@ -55,11 +55,15 @@ A gamified mobile app where users earn XP & coins by playing mini-games, claimin
 - Badges chips
 - Edit profile + logout
 
-## Design System
-- Neo-brutalist + vibrant pastels, hard 4px offset shadows, 2px borders
-- Dark/light mode auto-follows system
-- Bottom floating pill **5-tab** bar: Home / Games / Chat / Leaderboard / Profile
+## Design System (v3 — premium redesign)
+- Refined palette: violet → pink → cyan gradients, dark-first with auto light mode
+- Soft layered shadows (`softShadow` helper) replace prior hard offsets; gradient hero cards on key surfaces
+- Animated component primitives: `BrutalButton` (spring press feedback), `BrutalCard` (optional press scale), `GradientCard`, animated `Progress`, `Skeleton`, `AnimatedEntrance` wrapper
+- 350ms staggered fade + slide-up entrance on every screen
+- Skeleton loaders on Chat & Leaderboard
+- Frosted-glass floating bottom **5-tab** bar (BlurView on iOS) — Home / Games / Chat / Leaderboard / Profile
 - Ionicons + custom 3D coin/wheel/trophy/tap assets
+- All previous testIDs preserved through the refactor
 
 ## API Surface (`/api/*`)
 **Auth**
