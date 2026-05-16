@@ -159,6 +159,33 @@ export default function HomeTab() {
           </TouchableOpacity>
         </AnimatedEntrance>
 
+        {/* Watch-ad bonus CTA */}
+        <AnimatedEntrance delay={300}>
+          <TouchableOpacity
+            testID="watch-ad-cta"
+            activeOpacity={0.9}
+            onPress={() => setAdVisible(true)}
+            style={{ marginTop: SPACING.md }}
+          >
+            <GradientCard gradient="warm">
+              <View style={styles.rowBetween}>
+                <View style={{ flex: 1 }}>
+                  <View style={styles.adBadge}>
+                    <Ionicons name="play" size={10} color="#fff" />
+                    <Text style={styles.adBadgeText}>BONUS · HOURLY</Text>
+                  </View>
+                  <Text style={styles.cardTitleLight}>Watch ad for +50 coins</Text>
+                  <Text style={styles.cardSubLight}>Plus +40 XP. 5-second ad.</Text>
+                </View>
+                <View style={styles.adIconWrap}>
+                  <Ionicons name="play-circle" size={32} color="#fff" />
+                </View>
+              </View>
+            </GradientCard>
+          </TouchableOpacity>
+        </AnimatedEntrance>
+
+
         {/* Quick actions */}
         <AnimatedEntrance delay={320}>
           <Text style={[styles.section, { color: colors.text }]}>Quick play</Text>
