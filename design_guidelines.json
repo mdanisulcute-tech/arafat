@@ -1,0 +1,177 @@
+{
+  "theme": "Vibrant Play & Neo-Brutalism",
+  "archetype": "3 (Pastel & Soft) mixed with hard tactile borders",
+  "mode": "dark_and_light_support",
+  "rationale": "For an 'Earn + Game + Chat' gamified mobile app, users need a sense of fun, high energy, and tactile feedback. A neo-brutalist approach (thick borders, offset solid shadows, vibrant pastel colors) provides that highly engaging, game-like feel (similar to Duolingo or modern Gen Z social apps). Dark mode will shift the pastels to neon/cyber accents against a deep dark indigo background.",
+  "typography": {
+    "fonts": {
+      "heading": "Fredoka",
+      "body": "Nunito",
+      "fallback": "System"
+    },
+    "scales": {
+      "h1": "text-4xl tracking-tight font-black",
+      "h2": "text-3xl tracking-tight font-bold",
+      "h3": "text-2xl tracking-tight font-bold",
+      "body": "text-base font-medium leading-relaxed",
+      "caption": "text-sm font-bold uppercase tracking-widest",
+      "stats": "text-5xl font-black tracking-tighter"
+    },
+    "notes": "Headings must never use generic system sans. Fredoka gives the app its 'game' voice. Use uppercase tracking for small labels (XP, COINS, LEVEL)."
+  },
+  "colors": {
+    "light": {
+      "background": "#FAFAFA",
+      "surface": "#FFFFFF",
+      "primary": "#FF5C8D",
+      "secondary": "#B892FF",
+      "accent": "#00F0FF",
+      "warning": "#FFD800",
+      "success": "#00E676",
+      "text": "#0A0A0A",
+      "border": "#0A0A0A",
+      "shadow": "#0A0A0A"
+    },
+    "dark": {
+      "background": "#0B0C10",
+      "surface": "#1F2833",
+      "primary": "#FF5C8D",
+      "secondary": "#B892FF",
+      "accent": "#00F0FF",
+      "warning": "#FFD800",
+      "success": "#00E676",
+      "text": "#FDFDFD",
+      "border": "#FDFDFD",
+      "shadow": "#FDFDFD"
+    }
+  },
+  "layout_and_spacing": {
+    "generous_spacing": true,
+    "screen_padding": "p-6",
+    "card_padding": "p-5",
+    "gap_system": {
+      "sm": "gap-2",
+      "md": "gap-4",
+      "lg": "gap-6",
+      "xl": "gap-8"
+    },
+    "border_radius": "rounded-2xl"
+  },
+  "components": {
+    "cards": {
+      "style": "bg-surface border-2 border-border rounded-2xl",
+      "shadow_light": "shadow-[4px_4px_0px_0px_#0A0A0A]",
+      "shadow_dark": "shadow-[4px_4px_0px_0px_#FDFDFD]",
+      "interaction": "Active state should compress the shadow (translate-y-1, offset 0px 0px) to simulate a physical button press."
+    },
+    "buttons": {
+      "primary": "bg-primary text-white border-2 border-border rounded-xl py-4 px-6 font-bold text-lg text-center shadow-[4px_4px_0px_0px_#0A0A0A] dark:shadow-[4px_4px_0px_0px_#FDFDFD]",
+      "secondary": "bg-secondary text-white border-2 border-border rounded-xl py-4 px-6 font-bold text-lg text-center shadow-[4px_4px_0px_0px_#0A0A0A] dark:shadow-[4px_4px_0px_0px_#FDFDFD]",
+      "outline": "bg-transparent text-text border-2 border-border rounded-xl py-4 px-6 font-bold text-lg text-center"
+    },
+    "bottom_tab_navigation": {
+      "style": "absolute bottom-6 left-6 right-6 bg-surface border-2 border-border rounded-full py-2 px-6 flex-row justify-between items-center",
+      "shadow": "shadow-[0px_4px_0px_0px_rgba(10,10,10,1)] dark:shadow-[0px_4px_0px_0px_rgba(253,253,253,1)]",
+      "active_icon": "text-primary scale-110",
+      "inactive_icon": "text-text opacity-50"
+    },
+    "progress_bars": {
+      "container": "h-4 w-full bg-surface border-2 border-border rounded-full overflow-hidden",
+      "fill": "h-full bg-secondary rounded-full border-r-2 border-border"
+    },
+    "badges": {
+      "style": "bg-warning text-text border-2 border-border rounded-full px-3 py-1 text-xs font-black uppercase"
+    },
+    "testing": "All interactive buttons and inputs MUST include `testID` attribute (React Native equivalent of data-testid). Example: `testID='login-submit-button'`."
+  },
+  "screens": {
+    "authentication": {
+      "layout": "Centered form, massive playful logo/typography at the top.",
+      "background": "bg-secondary",
+      "elements": ["Email/Password inputs (thick borders)", "Forgot password link (underline)", "Primary Login Button", "Register Toggle"]
+    },
+    "home_dashboard": {
+      "header": "User Profile Mini-Card (left) + XP/Coin Badges (right)",
+      "hero_section": "Daily Streak / Level Progress Card. Large typography for XP.",
+      "quick_actions": "Grid of 2 columns for 'Daily Reward', 'Tasks', 'Leaderboard'",
+      "games_teaser": "Horizontal scroll of available mini-games (Quiz, Spin, Tap)."
+    },
+    "mini_games": {
+      "layout": "Immersive full screen. Large 3D game assets.",
+      "quiz": "Flashcard style neo-brutalist cards.",
+      "spin_wheel": "Large center wheel, 'SPIN' primary CTA at bottom.",
+      "tap_challenge": "Massive central button, countdown timer at top."
+    },
+    "leaderboard": {
+      "tabs": "Segmented control (Weekly / Monthly / All-Time)",
+      "podium": "Top 3 users highlighted at the top with Trophy asset.",
+      "list": "Vertical scroll list. Each row is a card with Rank, Avatar, Name, and XP."
+    },
+    "chat": {
+      "header": "Global Room vs DMs toggle.",
+      "list": "Message bubbles. Self messages: bg-primary. Others: bg-surface.",
+      "input": "Sticky bottom input field, send button (icon)."
+    },
+    "profile": {
+      "header": "Large Avatar, Username, Level, Join Date.",
+      "stats_grid": "Bento grid (Total XP, Games Won, Max Streak).",
+      "achievements": "Horizontal scroll of collected badges.",
+      "actions": "Edit Profile, Logout button."
+    }
+  },
+  "motion_and_interaction": {
+    "libraries": ["react-native-reanimated", "moti"],
+    "press_effect": "All buttons and cards MUST shrink slightly and reduce shadow offset to 0 on press to simulate physical tactility.",
+    "screen_transitions": "Slide-in from right for standard navigation, Modal slide-up for games and rewards.",
+    "rewards_celebration": "Use Lottie or Confetti for 'Level Up' and 'Daily Reward Claim' events."
+  },
+  "icons": {
+    "library": "lucide-react-native",
+    "stroke_width": "2.5 (thick strokes to match brutalist theme)"
+  },
+  "media": {
+    "game_assets": {
+      "gold_coin": {
+        "url": "https://static.prod-images.emergentagent.com/jobs/c89ed141-cb60-4b53-9383-d3ddc653989d/images/6be62e444b6c23b395ab50a6e45337c1a7c7bf6d6a7e364e5dc5d0336fcd9bae.png",
+        "description": "3D glossy golden coin for XP, Rewards, and Coin UI elements."
+      },
+      "spin_wheel": {
+        "url": "https://static.prod-images.emergentagent.com/jobs/c89ed141-cb60-4b53-9383-d3ddc653989d/images/0c66e5ec0986a25fa8c10a53d1196b4ecee940a370b9eaabf3cddf8515e1dd03.png",
+        "description": "3D colorful spin wheel for the Spin Wheel mini-game screen."
+      },
+      "trophy": {
+        "url": "https://static.prod-images.emergentagent.com/jobs/c89ed141-cb60-4b53-9383-d3ddc653989d/images/6330244a65c6ce49c40eb77a107c1e59b6ee048956f6f5da348f17f94a4e4954.png",
+        "description": "3D gold and crystal trophy for the Leaderboard podium."
+      },
+      "tap_button": {
+        "url": "https://static.prod-images.emergentagent.com/jobs/c89ed141-cb60-4b53-9383-d3ddc653989d/images/ac51f5a0230504f9b1befb8e80dbbc59a9bc49ec00760540fd600749e6c7fad5.png",
+        "description": "3D minimalist tap button asset for the Tap Challenge mini-game."
+      }
+    },
+    "avatars": {
+      "user_1": {
+        "url": "https://images.unsplash.com/flagged/photo-1596479042555-9265a7fa7983?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1OTV8MHwxfHNlYXJjaHwxfHxzbWlsaW5nJTIweW91bmclMjBwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3Nzg5MjUzNDl8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Avatar placeholder for user profiles and leaderboards"
+      },
+      "user_2": {
+        "url": "https://images.unsplash.com/photo-1612203304476-2ed23c55b5b9?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1OTV8MHwxfHNlYXJjaHwyfHxzbWlsaW5nJTIweW91bmclMjBwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3Nzg5MjUzNDl8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Avatar placeholder for chat and leaderboards"
+      },
+      "user_3": {
+        "url": "https://images.unsplash.com/photo-1662850886700-4ec19bd30d11?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1OTV8MHwxfHNlYXJjaHwzfHxzbWlsaW5nJTIweW91bmclMjBwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3Nzg5MjUzNDl8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Avatar placeholder for chat and leaderboards"
+      }
+    }
+  },
+  "instructions_to_main_agent": [
+    "This is a React Native Expo application. Use View, Text, TouchableOpacity, ScrollView instead of HTML tags.",
+    "Use NativeWind or Tailwind React Native styling if available, otherwise map the provided Tailwind tokens to StyleSheet objects.",
+    "The core visual identity is 'Neo-Brutalism'. This means EVERY card and button needs a thick border (borderWidth: 2, borderColor: '#0A0A0A' in light mode, '#FDFDFD' in dark mode) and a hard shadow (no blur radius).",
+    "In React Native, hard shadows are achieved via: shadowColor: '#000', shadowOffset: { width: 4, height: 4 }, shadowOpacity: 1, shadowRadius: 0, elevation: 0.",
+    "Do NOT use generic minimal tech designs. The app must feel like a game. Use the provided 3D assets heavily in the UI (e.g., place the gold_coin image next to the XP text).",
+    "Implement bottom tab navigation using @react-navigation/bottom-tabs. Style the tab bar as a floating pill (absolute position, bordered, rounded-full) rather than a full-width block attached to the screen bottom.",
+    "Ensure the application handles dark/light mode dynamically. The borders and text swap between #0A0A0A (light) and #FDFDFD (dark).",
+    "Include 'testID' attributes on all interactive elements as requested for automated testing.",
+    "Use lucide-react-native for icons. Set strokeWidth={2.5} for a chunkier, bolder look."
+  ]
+}
