@@ -36,6 +36,10 @@ export default function RootLayout() {
             name="missions"
             options={{ presentation: "modal", animation: "slide_from_bottom" }}
           />
+          <Stack.Screen
+            name="admin"
+            options={{ presentation: "modal", animation: "slide_from_bottom" }}
+          />
         </Stack>
       </AuthProvider>
     </SafeAreaProvider>

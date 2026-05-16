@@ -9,6 +9,9 @@ export type User = {
   streak: number;
   best_tap_score: number;
   last_login_reward_at: string | null;
+  last_ad_claim_at: string | null;
+  is_admin: boolean;
+  is_banned: boolean;
   badges: string[];
   games_played: number;
   created_at: string;

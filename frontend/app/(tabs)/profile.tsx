@@ -144,6 +144,16 @@ export default function ProfileTab() {
 
         <AnimatedEntrance delay={480}>
           <View style={{ marginTop: SPACING.lg, gap: 12 }}>
+            {user.is_admin && (
+              <BrutalButton
+                testID="profile-admin"
+                title="Admin panel"
+                variant="outline"
+                onPress={() => router.push("/admin")}
+                icon={<Ionicons name="shield-checkmark" size={16} color={colors.warning} />}
+                textStyle={{ color: colors.warning }}
+              />
+            )}
             {editing ? (
               <>
                 <BrutalButton

@@ -1,0 +1,58 @@
+{
+  "summary": "Iteration 4 testing (both). Backend: 61/61 pytest pass (40 cumulative from iters 1–2 + 21 new iter-4 tests). All new endpoints verified: POST /api/rewards/watch-ad awards +40 XP +50 coins + cooldown (429), GET /api/admin/users (200 admin, 403 non-admin, 401 no auth), POST /api/admin/grant (200 / 404 unknown / 400 nothing-to-grant / 403 non-admin), POST /api/admin/ban (ban→login returns 403 'Account has been suspended', unban restores login, cannot ban admin → 400, 404 unknown, 403 non-admin). Admin seed user logs in with is_admin=true. Regression spot-check on /auth/login, /games/quiz/submit, /games/spin, /missions, /chat/messages, /leaderboard all green. Frontend: admin login, profile-admin button (admin only) hidden for demo, /admin screen renders 18 user rows with admin-user-{username} testIDs and +100 / Ban buttons, admin-close returns. NO console errors. CRITICAL FRONTEND BUG: the watch-ad-cta card is MISSING from the home dashboard — RewardedAdModal is rendered with adVisible state in (tabs)/index.tsx but NO UI element calls setAdVisible(true). The rewarded-ad flow is therefore unreachable from the UI. Backend endpoint works perfectly so the fix is purely a missing JSX block on home.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "(tabs)/index.tsx",
+        "issue": "watch-ad-cta card is MISSING. RewardedAdModal is mounted with `<RewardedAdModal visible={adVisible} onClose={...} />` and useState(false) for adVisible, but NO TouchableOpacity/Card with testID='watch-ad-cta' ever calls setAdVisible(true). The whole rewarded-ad flow (watch-ad-start → 5s countdown → watch-ad-done → cooldown error phase) is currently unreachable from the home dashboard.",
+        "testID": "watch-ad-cta",
+        "priority": "CRITICAL"
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "Home → Watch Ad → Modal → /api/rewards/watch-ad",
+        "issue": "Cannot be exercised end-to-end because the entry point on Home is missing. Backend endpoint itself is verified working (pytest test_watch_ad_awards_then_rate_limited passes).",
+        "affected_testIDs": ["watch-ad-cta", "watch-ad-start", "watch-ad-done", "watch-ad-close"]
+      }
+    ],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "various (carry-over)", "issue": "Same deprecation warnings as iter 2/3 (shadow* style props, props.pointerEvents, useNativeDriver fallback on web). No console.error — warnings only."}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/backend/tests/test_phase2.py",
+    "/app/backend/tests/test_phase4_admin_ads.py",
+    "/app/test_reports/pytest/iter4_results.xml"
+  ],
+  "action_items": [
+    "Add the watch-ad-cta card to (tabs)/index.tsx home dashboard. Suggested spot: between the daily-reward-cta and 'Quick play' grid (or below the stats row). Required: TouchableOpacity (or BrutalCard/GradientCard) with testID='watch-ad-cta', orange gradient styling, onPress={() => setAdVisible(true)}. After adding, the existing <RewardedAdModal/> mount + watch-ad-start/watch-ad-done/watch-ad-close testIDs will work end-to-end."
+  ],
+  "critical_code_review_comments": [
+    "server.py rewarded-ad endpoint correctly uses last_ad_claim_at + 1h cooldown, returns 429 with 'Try again in Xm Ys' message, awards +40 XP / +50 coins, logs XP event, and returns updated user — matches spec exactly.",
+    "Admin endpoints correctly gated by require_admin dep; ban-check is enforced in /auth/login (line 322) returning 403 'Account has been suspended' — matches spec.",
+    "admin_list_users excludes password_hash AND _id projections (good — no Mongo ObjectId leak).",
+    "admin.tsx properly defends with useFocusEffect 'Access denied' Alert + router.back() if non-admin lands directly on /admin (defense-in-depth beyond UI hiding).",
+    "RewardedAdModal correctly implements three phases (intro / playing with 5s countdown + progress bar / done|error) and refreshes user via refresh() in AuthContext on success.",
+    "Profile correctly conditions profile-admin BrutalButton on user.is_admin — good role-gated UI.",
+    "(tabs)/index.tsx imports RewardedAdModal and declares `const [adVisible, setAdVisible] = useState(false);` but never calls setAdVisible(true) anywhere in the file (grep verified). The CTA card mentioned in the iter-4 spec was never added to the JSX tree."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_phase4_admin_ads.py (new — 21 iter4 backend tests)"
+  ],
+  "success_rate": {
+    "backend": "100% (61/61 pytest)",
+    "frontend": "~90% — all iter4 features verified EXCEPT watch-ad flow which is unreachable due to missing CTA card"
+  },
+  "seed_data_creation": "Phase-4 tests register a handful of fresh TESTp4_<sfx> users via /api/auth/register (used as ban/grant/watch-ad targets). These leave residual users in db.users — same pattern as iter 2 phase-2 tests. Acceptable for dev; admin /admin/users now shows 18 total seeded+test users.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend public URL: https://gamify-earn-2.preview.emergentagent.com (use EXPO_PUBLIC_BACKEND_URL from /app/frontend/.env). Test credentials in /app/memory/test_credentials.md. Tab buttons use testID 'tab-button-{name}' (index/games/chat/leaderboard/profile). Login inputs are login-email-input / login-password-input / login-submit-button (NOT login-email/password/submit). Important Playwright note: clicking buttons that are below the fold with force=True can register on the floating bottom tab bar instead — always use `locator.scroll_into_view_if_needed()` then plain click() for profile-admin, profile-logout, profile-save. Once watch-ad-cta is added on home, the next test should: tap watch-ad-cta → wait for modal → tap watch-ad-start → wait 6s → assert watch-ad-done visible AND user.coins increased → close → reopen modal → tap watch-ad-start → assert error phase with cooldown message ('Try again in').",
+  "rca_of_issue": "Root cause of missing watch-ad UI: in (tabs)/index.tsx the developer added the modal state hook (`const [adVisible, setAdVisible] = useState(false);` line 30) and mounted the modal at the end of the screen (`<RewardedAdModal visible={adVisible} onClose={...} />` line 212), but did NOT add the gradient orange CTA card that toggles setAdVisible(true). The result is that the modal exists in the React tree but no on-screen element opens it. Reproduction: login as any user → home → search DOM for [data-testid=watch-ad-cta] → returns null. Mitigation: add a `<TouchableOpacity testID='watch-ad-cta' onPress={() => setAdVisible(true)}>` wrapping a BrutalCard or GradientCard (gradient='warm' or 'sunset') with title like 'Watch ad for +40 XP & +50 coins' between the daily-reward-cta and Quick play section."
+}

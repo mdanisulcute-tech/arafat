@@ -82,6 +82,9 @@ class UserPublic(BaseModel):
     streak: int
     best_tap_score: int = 0
     last_login_reward_at: Optional[datetime] = None
+    last_ad_claim_at: Optional[datetime] = None
+    is_admin: bool = False
+    is_banned: bool = False
     badges: List[str] = []
     games_played: int = 0
     created_at: datetime
@@ -210,6 +213,9 @@ def user_to_public(u: dict) -> UserPublic:
         streak=u.get("streak", 0),
         best_tap_score=u.get("best_tap_score", 0),
         last_login_reward_at=u.get("last_login_reward_at"),
+        last_ad_claim_at=u.get("last_ad_claim_at"),
+        is_admin=u.get("is_admin", False),
+        is_banned=u.get("is_banned", False),
         badges=u.get("badges", []),
         games_played=u.get("games_played", 0),
         created_at=u["created_at"],
@@ -313,6 +319,8 @@ async def login(body: LoginRequest):
     user = await db.users.find_one({"email": body.email.lower()})
     if not user or not verify_password(body.password, user.get("password_hash", "")):
         raise HTTPException(status_code=401, detail="Invalid email or password")
+    if user.get("is_banned"):
+        raise HTTPException(status_code=403, detail="Account has been suspended")
     token = create_jwt(user["id"])
     return AuthResponse(token=token, user=user_to_public(user))
 
@@ -654,6 +662,109 @@ async def leaderboard(period: Literal["weekly", "monthly", "all"] = "all"):
 
 
 # ------------------------------------------------------------
+# Routes — Rewarded Ad (Monetisation hook, MOCKED)
+# ------------------------------------------------------------
+@api_router.post("/rewards/watch-ad")
+async def watch_ad(current=Depends(get_current_user)):
+    """Simulated rewarded ad. Once per hour per user. Grants 2x bonus."""
+    last = ensure_aware(current.get("last_ad_claim_at"))
+    cooldown = timedelta(hours=1)
+    if isinstance(last, datetime) and now_utc() - last < cooldown:
+        remaining = int((cooldown - (now_utc() - last)).total_seconds())
+        raise HTTPException(
+            status_code=429,
+            detail=f"Try again in {remaining // 60}m {remaining % 60}s",
+        )
+    xp = 40
+    coins = 50
+    await db.users.update_one(
+        {"id": current["id"]},
+        {
+            "$set": {"last_ad_claim_at": now_utc()},
+            "$inc": {"xp": xp, "coins": coins},
+        },
+    )
+    await log_xp_event(current["id"], xp)
+    updated = await db.users.find_one({"id": current["id"]}, {"_id": 0})
+    return {
+        "xp_awarded": xp,
+        "coins_awarded": coins,
+        "next_claim_in_seconds": int(cooldown.total_seconds()),
+        "user": user_to_public(updated).model_dump(mode="json"),
+    }
+
+
+# ------------------------------------------------------------
+# Routes — Admin
+# ------------------------------------------------------------
+async def require_admin(current=Depends(get_current_user)):
+    if not current.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin only")
+    return current
+
+
+class AdminGrant(BaseModel):
+    user_id: str
+    xp: int = 0
+    coins: int = 0
+
+
+class AdminBan(BaseModel):
+    user_id: str
+    banned: bool = True
+
+
+@api_router.get("/admin/users")
+async def admin_list_users(current=Depends(require_admin)):
+    items = await db.users.find({}, {"_id": 0, "password_hash": 0}).sort("created_at", -1).limit(100).to_list(100)
+    out = []
+    for u in items:
+        out.append({
+            "id": u["id"],
+            "email": u["email"],
+            "username": u["username"],
+            "avatar": u.get("avatar", ""),
+            "xp": u.get("xp", 0),
+            "coins": u.get("coins", 0),
+            "level": level_from_xp(u.get("xp", 0)),
+            "is_admin": u.get("is_admin", False),
+            "is_banned": u.get("is_banned", False),
+            "games_played": u.get("games_played", 0),
+            "created_at": u["created_at"].isoformat() if isinstance(u.get("created_at"), datetime) else u.get("created_at"),
+        })
+    return out
+
+
+@api_router.post("/admin/grant")
+async def admin_grant(body: AdminGrant, current=Depends(require_admin)):
+    user = await db.users.find_one({"id": body.user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    inc = {}
+    if body.xp:
+        inc["xp"] = body.xp
+    if body.coins:
+        inc["coins"] = body.coins
+    if not inc:
+        raise HTTPException(status_code=400, detail="Nothing to grant")
+    await db.users.update_one({"id": body.user_id}, {"$inc": inc})
+    if body.xp > 0:
+        await log_xp_event(body.user_id, body.xp)
+    return {"ok": True, "granted_xp": body.xp, "granted_coins": body.coins}
+
+
+@api_router.post("/admin/ban")
+async def admin_ban(body: AdminBan, current=Depends(require_admin)):
+    user = await db.users.find_one({"id": body.user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.get("is_admin") and body.banned:
+        raise HTTPException(status_code=400, detail="Cannot ban an admin")
+    await db.users.update_one({"id": body.user_id}, {"$set": {"is_banned": body.banned}})
+    return {"ok": True, "user_id": body.user_id, "is_banned": body.banned}
+
+
+# ------------------------------------------------------------
 # Health
 # ------------------------------------------------------------
 @api_router.get("/")
@@ -678,6 +789,7 @@ QUIZ_SEED = [
 ]
 
 DEMO_USERS = [
+    {"email": "admin@earnplay.app", "username": "AdminAce", "password": "Admin1234!", "xp": 0, "coins": 1000, "is_admin": True},
     {"email": "demo@earnplay.app", "username": "DemoHero", "password": "Demo1234!", "xp": 850, "coins": 420},
     {"email": "ace@earnplay.app", "username": "AceMaster", "password": "Demo1234!", "xp": 1240, "coins": 680},
     {"email": "luna@earnplay.app", "username": "LunaStar", "password": "Demo1234!", "xp": 540, "coins": 210},
@@ -715,7 +827,10 @@ async def startup():
             "streak": 0,
             "best_tap_score": 0,
             "last_login_reward_at": None,
-            "badges": ["pioneer"],
+            "last_ad_claim_at": None,
+            "is_admin": du.get("is_admin", False),
+            "is_banned": False,
+            "badges": ["admin"] if du.get("is_admin") else ["pioneer"],
             "games_played": 0,
             "created_at": now_utc(),
         })

@@ -15,6 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { BrutalCard, GradientCard, Progress } from "@/src/components/Brutal";
 import { AnimatedEntrance } from "@/src/components/AnimatedEntrance";
+import { RewardedAdModal } from "@/src/components/RewardedAdModal";
 import { useTheme, SPACING, GRADIENTS, softShadow, RADIUS } from "@/src/theme";
 import { useAuth } from "@/src/contexts/AuthContext";
 
@@ -26,6 +27,7 @@ export default function HomeTab() {
   const { user, refresh } = useAuth();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
+  const [adVisible, setAdVisible] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -207,6 +209,7 @@ export default function HomeTab() {
 
         <View style={{ height: 130 }} />
       </ScrollView>
+      <RewardedAdModal visible={adVisible} onClose={() => setAdVisible(false)} />
     </SafeAreaView>
   );
 }
@@ -339,6 +342,27 @@ const styles = StyleSheet.create({
   statLabel: { fontSize: 10, fontWeight: "800", letterSpacing: 1.2, marginTop: 2 },
   cardTitle: { fontSize: 17, fontWeight: "800" },
   cardSub: { fontSize: 13, fontWeight: "600", marginTop: 2 },
+  cardTitleLight: { fontSize: 17, fontWeight: "800", color: "#fff", marginTop: 8 },
+  cardSubLight: { fontSize: 13, fontWeight: "600", color: "rgba(255,255,255,0.9)", marginTop: 2 },
+  adBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.25)",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+    alignSelf: "flex-start",
+    gap: 4,
+  },
+  adBadgeText: { color: "#fff", fontWeight: "900", fontSize: 10, letterSpacing: 0.6 },
+  adIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: RADIUS.lg,
+    backgroundColor: "rgba(255,255,255,0.22)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   section: { fontSize: 18, fontWeight: "800", marginTop: SPACING.lg, marginBottom: SPACING.sm, letterSpacing: -0.3 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   gridItem: { width: "47.7%" },
