@@ -9,12 +9,13 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "expo-router";
-import { useTheme, SPACING, RADIUS, hardShadow } from "@/src/theme";
+import { useTheme, SPACING, RADIUS, softShadow } from "@/src/theme";
+import { AnimatedEntrance } from "@/src/components/AnimatedEntrance";
+import { SkeletonCard } from "@/src/components/Skeleton";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { api } from "@/src/api/client";
 import { ChatMessage } from "@/src/types";
@@ -71,31 +72,43 @@ export default function ChatTab() {
     }
   };
 
+  const formatTime = (iso: string) => {
+    const d = new Date(iso);
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  };
+
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={["top"]}>
-      <View style={styles.headerRow}>
-        <Text style={[styles.title, { color: colors.text }]}>GLOBAL CHAT</Text>
-        <View style={[styles.online, { backgroundColor: colors.success, borderColor: colors.border }]}>
-          <View style={styles.onlineDot} />
-          <Text style={styles.onlineText}>LIVE</Text>
+      <AnimatedEntrance from="top">
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={[styles.title, { color: colors.text }]}>Global Chat</Text>
+            <Text style={[styles.sub, { color: colors.textMuted }]}>Say hi to other players</Text>
+          </View>
+          <View style={[styles.online, { backgroundColor: `${colors.success}1A`, borderColor: colors.success }]}>
+            <View style={[styles.onlineDot, { backgroundColor: colors.success }]} />
+            <Text style={[styles.onlineText, { color: colors.success }]}>LIVE</Text>
+          </View>
         </View>
-      </View>
+      </AnimatedEntrance>
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
       >
         {loading ? (
-          <View style={styles.center}>
-            <ActivityIndicator color={colors.primary} size="large" />
+          <View style={{ padding: SPACING.lg, gap: 10 }}>
+            <SkeletonCard height={60} />
+            <SkeletonCard height={60} />
+            <SkeletonCard height={60} />
           </View>
         ) : (
           <FlatList
             ref={listRef}
             data={messages}
             keyExtractor={(m) => m.id}
-            contentContainerStyle={{ padding: SPACING.lg, paddingBottom: 120 }}
+            contentContainerStyle={{ padding: SPACING.lg, paddingBottom: 130 }}
+            showsVerticalScrollIndicator={false}
             renderItem={({ item }) => {
               const isMe = user && item.user_id === user.id;
               return (
@@ -111,18 +124,22 @@ export default function ChatTab() {
                       styles.bubble,
                       {
                         backgroundColor: isMe ? colors.primary : colors.surface,
-                        borderColor: colors.border,
                         marginLeft: isMe ? 0 : 8,
                         marginRight: isMe ? 8 : 0,
+                        borderTopLeftRadius: isMe ? 18 : 4,
+                        borderTopRightRadius: isMe ? 4 : 18,
                       },
-                      hardShadow(colors.border, 3),
+                      softShadow(colors.shadow, 4),
                     ]}
                   >
                     {!isMe && (
-                      <Text style={[styles.who, { color: colors.textMuted }]}>@{item.username}</Text>
+                      <Text style={[styles.who, { color: colors.primary }]}>@{item.username}</Text>
                     )}
-                    <Text style={[styles.bubbleText, { color: isMe ? "#0A0A0A" : colors.text }]}>
+                    <Text style={[styles.bubbleText, { color: isMe ? "#fff" : colors.text }]}>
                       {item.text}
+                    </Text>
+                    <Text style={[styles.time, { color: isMe ? "rgba(255,255,255,0.7)" : colors.textSubtle }]}>
+                      {formatTime(item.created_at)}
                     </Text>
                   </View>
                   {isMe && (
@@ -132,20 +149,24 @@ export default function ChatTab() {
               );
             }}
             ListEmptyComponent={
-              <Text style={{ color: colors.textMuted, textAlign: "center", marginTop: 60, fontWeight: "700" }}>
+              <Text style={{ color: colors.textMuted, textAlign: "center", marginTop: 60, fontWeight: "600" }}>
                 Be the first to say hi 👋
               </Text>
             }
           />
         )}
 
-        <View style={[styles.inputBar, { backgroundColor: colors.surface, borderColor: colors.border }, hardShadow(colors.border, 4)]}>
+        <View style={[
+          styles.inputBar,
+          { backgroundColor: colors.surface, borderColor: colors.border },
+          softShadow(colors.shadow, 14),
+        ]}>
           <TextInput
             testID="chat-input"
             value={text}
             onChangeText={setText}
-            placeholder="Say something..."
-            placeholderTextColor={colors.textMuted}
+            placeholder="Say something…"
+            placeholderTextColor={colors.textSubtle}
             style={[styles.input, { color: colors.text }]}
             maxLength={300}
             onSubmitEditing={send}
@@ -155,16 +176,13 @@ export default function ChatTab() {
             testID="chat-send"
             onPress={send}
             disabled={sending || !text.trim()}
+            activeOpacity={0.8}
             style={[
               styles.sendBtn,
-              {
-                backgroundColor: colors.primary,
-                borderColor: colors.border,
-                opacity: sending || !text.trim() ? 0.5 : 1,
-              },
+              { backgroundColor: colors.primary, opacity: sending || !text.trim() ? 0.4 : 1 },
             ]}
           >
-            <Ionicons name="send" size={20} color="#0A0A0A" />
+            <Ionicons name="send" size={18} color="#fff" />
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -182,36 +200,36 @@ const styles = StyleSheet.create({
     paddingTop: SPACING.sm,
     paddingBottom: SPACING.sm,
   },
-  title: { fontSize: 28, fontWeight: "900", letterSpacing: -1 },
+  title: { fontSize: 28, fontWeight: "900", letterSpacing: -0.8 },
+  sub: { fontWeight: "500", fontSize: 13, marginTop: 2 },
   online: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: 5,
     borderRadius: 999,
-    borderWidth: 2,
+    borderWidth: 1,
     gap: 5,
   },
-  onlineDot: { width: 8, height: 8, borderRadius: 999, backgroundColor: "#0A0A0A" },
-  onlineText: { fontSize: 11, fontWeight: "900", color: "#0A0A0A", letterSpacing: 1 },
-  center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  bubbleRow: { flexDirection: "row", alignItems: "flex-end", marginVertical: 4 },
-  av: { width: 32, height: 32, borderRadius: 999, borderWidth: 2 },
+  onlineDot: { width: 6, height: 6, borderRadius: 999 },
+  onlineText: { fontSize: 10, fontWeight: "900", letterSpacing: 0.8 },
+  bubbleRow: { flexDirection: "row", alignItems: "flex-end", marginVertical: 6 },
+  av: { width: 32, height: 32, borderRadius: 999, borderWidth: 1 },
   bubble: {
     maxWidth: "75%",
-    borderWidth: 2,
-    borderRadius: RADIUS.lg,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
   },
-  who: { fontSize: 11, fontWeight: "900", letterSpacing: 1, marginBottom: 2 },
-  bubbleText: { fontSize: 15, fontWeight: "700" },
+  who: { fontSize: 11, fontWeight: "800", marginBottom: 2 },
+  bubbleText: { fontSize: 15, fontWeight: "500", lineHeight: 20 },
+  time: { fontSize: 10, fontWeight: "600", marginTop: 3, alignSelf: "flex-end" },
   inputBar: {
     position: "absolute",
     bottom: Platform.OS === "ios" ? 100 : 92,
     left: 16,
     right: 16,
-    borderWidth: 2,
+    borderWidth: 1,
     borderRadius: 999,
     paddingHorizontal: 8,
     paddingVertical: 6,
@@ -219,12 +237,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
   },
-  input: { flex: 1, fontSize: 15, fontWeight: "600", paddingHorizontal: 10, paddingVertical: 8 },
+  input: { flex: 1, fontSize: 15, fontWeight: "500", paddingHorizontal: 12, paddingVertical: 10 },
   sendBtn: {
-    width: 40,
-    height: 40,
+    width: 42,
+    height: 42,
     borderRadius: 999,
-    borderWidth: 2,
     alignItems: "center",
     justifyContent: "center",
   },

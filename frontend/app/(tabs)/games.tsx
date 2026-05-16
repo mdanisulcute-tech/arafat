@@ -1,9 +1,11 @@
 import React from "react";
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { BrutalCard, BrutalBadge } from "@/src/components/Brutal";
-import { useTheme, SPACING } from "@/src/theme";
+import { BrutalCard, GradientCard } from "@/src/components/Brutal";
+import { AnimatedEntrance } from "@/src/components/AnimatedEntrance";
+import { useTheme, SPACING, GRADIENTS } from "@/src/theme";
 import { Ionicons } from "@expo/vector-icons";
 
 const ASSETS = {
@@ -21,17 +23,17 @@ export default function GamesTab() {
       key: "quiz",
       title: "Quiz Showdown",
       sub: "5 brain-busting questions",
-      reward: "+75 XP",
-      bg: colors.secondary,
-      icon: "bulb" as any,
+      reward: "Up to +75 XP",
+      gradient: "cool" as const,
+      icon: "bulb" as const,
       onPress: () => router.push("/games/quiz"),
     },
     {
       key: "spin",
       title: "Spin the Wheel",
-      sub: "One spin per minute",
-      reward: "+100 coins jackpot",
-      bg: colors.accent,
+      sub: "Limited to once per minute",
+      reward: "Up to +100 coins",
+      gradient: "cyan" as const,
       img: ASSETS.spin,
       onPress: () => router.push("/games/spin"),
     },
@@ -39,8 +41,8 @@ export default function GamesTab() {
       key: "tap",
       title: "Tap Challenge",
       sub: "15-second tap sprint",
-      reward: "+1 XP / 5 taps",
-      bg: colors.primary,
+      reward: "+1 XP per 5 taps",
+      gradient: "warm" as const,
       img: ASSETS.tap,
       onPress: () => router.push("/games/tap"),
     },
@@ -49,67 +51,73 @@ export default function GamesTab() {
       title: "Daily Reward",
       sub: "Claim once a day, build a streak",
       reward: "+25 XP & coins",
-      bg: colors.warning,
-      icon: "gift" as any,
+      gradient: "sunset" as const,
+      icon: "gift" as const,
       onPress: () => router.push("/games/daily"),
     },
   ];
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={["top"]}>
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={[styles.title, { color: colors.text }]}>GAMES</Text>
-        <Text style={[styles.sub, { color: colors.textMuted }]}>
-          Pick a game and stack rewards
-        </Text>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <AnimatedEntrance from="top" delay={0}>
+          <Text style={[styles.title, { color: colors.text }]}>Games</Text>
+          <Text style={[styles.sub, { color: colors.textMuted }]}>
+            Pick a challenge and stack rewards
+          </Text>
+        </AnimatedEntrance>
 
         {/* Missions banner */}
-        <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={() => router.push("/missions")}
-          testID="open-missions"
-        >
-          <BrutalCard background={colors.success} style={{ marginTop: SPACING.md }}>
-            <View style={styles.row}>
-              <Ionicons name="list-circle" size={56} color="#0A0A0A" />
-              <View style={{ flex: 1, marginLeft: 10 }}>
-                <BrutalBadge label="DAILY MISSIONS" color={colors.warning} />
-                <Text style={styles.cardTitle}>Bonus rewards await</Text>
-                <Text style={styles.cardSub}>Tap to view today&apos;s missions →</Text>
-              </View>
-            </View>
-          </BrutalCard>
-        </TouchableOpacity>
-
-        {games.map((g) => (
-          <TouchableOpacity
-            key={g.key}
-            activeOpacity={0.85}
-            onPress={g.onPress}
-            testID={`game-card-${g.key}`}
-          >
-            <BrutalCard background={g.bg} style={{ marginTop: SPACING.md }}>
+        <AnimatedEntrance delay={120}>
+          <TouchableOpacity activeOpacity={0.9} onPress={() => router.push("/missions")} testID="open-missions">
+            <GradientCard gradient="success" style={{ marginTop: SPACING.md }}>
               <View style={styles.row}>
-                <View style={{ flex: 1 }}>
-                  <BrutalBadge label="LIVE" color={colors.warning} />
-                  <Text style={styles.cardTitle}>{g.title}</Text>
-                  <Text style={styles.cardSub}>{g.sub}</Text>
-                  <View style={styles.rewardRow}>
-                    <Image source={{ uri: ASSETS.coin }} style={styles.coinSmall} />
-                    <Text style={styles.reward}>{g.reward}</Text>
-                  </View>
+                <View style={styles.iconCircle}>
+                  <Ionicons name="ribbon" size={26} color="#fff" />
                 </View>
-                {g.img ? (
-                  <Image source={{ uri: g.img }} style={styles.gameImg} />
-                ) : (
-                  <Ionicons name={g.icon} size={72} color="#0A0A0A" />
-                )}
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <View style={styles.tag}>
+                    <Text style={styles.tagText}>DAILY MISSIONS</Text>
+                  </View>
+                  <Text style={styles.bannerTitle}>Bonus rewards await</Text>
+                  <Text style={styles.bannerSub}>Tap to view today&apos;s missions →</Text>
+                </View>
               </View>
-            </BrutalCard>
+            </GradientCard>
           </TouchableOpacity>
+        </AnimatedEntrance>
+
+        {games.map((g, i) => (
+          <AnimatedEntrance key={g.key} delay={180 + i * 70}>
+            <TouchableOpacity activeOpacity={0.9} onPress={g.onPress} testID={`game-card-${g.key}`}>
+              <GradientCard gradient={g.gradient} style={{ marginTop: SPACING.md }}>
+                <View style={styles.row}>
+                  <View style={{ flex: 1 }}>
+                    <View style={styles.liveTag}>
+                      <View style={styles.liveDot} />
+                      <Text style={styles.liveText}>LIVE</Text>
+                    </View>
+                    <Text style={styles.gameTitle}>{g.title}</Text>
+                    <Text style={styles.gameSub}>{g.sub}</Text>
+                    <View style={styles.rewardRow}>
+                      <Image source={{ uri: ASSETS.coin }} style={styles.coinSmall} />
+                      <Text style={styles.reward}>{g.reward}</Text>
+                    </View>
+                  </View>
+                  {g.img ? (
+                    <Image source={{ uri: g.img }} style={styles.gameImg} />
+                  ) : (
+                    <View style={styles.gameIconCircle}>
+                      <Ionicons name={g.icon!} size={42} color="#fff" />
+                    </View>
+                  )}
+                </View>
+              </GradientCard>
+            </TouchableOpacity>
+          </AnimatedEntrance>
         ))}
 
-        <View style={{ height: 120 }} />
+        <View style={{ height: 130 }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -117,14 +125,52 @@ export default function GamesTab() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  scroll: { padding: SPACING.lg },
-  title: { fontSize: 36, fontWeight: "900", letterSpacing: -1 },
-  sub: { fontWeight: "700", marginTop: 4 },
+  scroll: { padding: SPACING.lg, paddingTop: SPACING.sm },
+  title: { fontSize: 32, fontWeight: "900", letterSpacing: -1 },
+  sub: { fontWeight: "500", marginTop: 4, fontSize: 14 },
   row: { flexDirection: "row", alignItems: "center" },
-  cardTitle: { fontSize: 22, fontWeight: "900", color: "#0A0A0A", marginTop: 8 },
-  cardSub: { fontSize: 13, fontWeight: "700", color: "#0A0A0A", marginTop: 4 },
+  iconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  tag: {
+    backgroundColor: "rgba(255,255,255,0.22)",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+    alignSelf: "flex-start",
+  },
+  tagText: { color: "#fff", fontWeight: "900", fontSize: 10, letterSpacing: 0.8 },
+  bannerTitle: { fontSize: 18, fontWeight: "800", color: "#fff", marginTop: 6 },
+  bannerSub: { fontSize: 13, fontWeight: "600", color: "rgba(255,255,255,0.9)", marginTop: 2 },
+  liveTag: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.22)",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+    alignSelf: "flex-start",
+    gap: 5,
+  },
+  liveDot: { width: 6, height: 6, borderRadius: 999, backgroundColor: "#fff" },
+  liveText: { color: "#fff", fontWeight: "900", fontSize: 10, letterSpacing: 0.8 },
+  gameTitle: { fontSize: 20, fontWeight: "800", color: "#fff", marginTop: 8 },
+  gameSub: { fontSize: 13, fontWeight: "600", color: "rgba(255,255,255,0.9)", marginTop: 2 },
   rewardRow: { flexDirection: "row", alignItems: "center", marginTop: 10, gap: 6 },
-  coinSmall: { width: 18, height: 18 },
-  reward: { fontSize: 12, fontWeight: "900", color: "#0A0A0A", letterSpacing: 0.5 },
-  gameImg: { width: 96, height: 96 },
+  coinSmall: { width: 16, height: 16 },
+  reward: { fontSize: 12, fontWeight: "800", color: "#fff" },
+  gameImg: { width: 88, height: 88 },
+  gameIconCircle: {
+    width: 78,
+    height: 78,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.22)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });
